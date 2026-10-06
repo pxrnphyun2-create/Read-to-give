@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Read2Give - Read • Earn • Give</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#3B82F6',
+                            softblue: '#EFF6FF',
+                            gold: '#F59E0B',
+                            lightgold: '#FEF3C7',
+                            coral: '#EF4444',
+                            softcoral: '#FEF2F2',
+                            mint: '#10B981',
+                            teal: '#14B8A6',
+                            cream: '#FFFBEB'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .phone-container {
+            transition: all 0.3s ease;
+        }
+        .phone-screen {
+            max-width: 420px;
+            height: 840px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 40px;
+            border: 10px solid #1e293b;
+        }
+        .desktop-screen {
+            max-width: 100%;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .toast-slide {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-0 sm:p-4 text-slate-800">
+
+    <div id="controlBar" class="fixed top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-800/90 backdrop-blur-md border border-slate-700 text-white px-4 py-2 rounded-full flex items-center gap-3 shadow-2xl text-xs sm:text-sm">
+        <div class="flex items-center gap-1.5 font-bold text-amber-400 mr-1">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span class="hidden sm:inline">Read2Give Prototype</span>
+        </div>
+        
+        <!-- Role Switcher -->
+        <div class="flex bg-slate-900 p-1 rounded-full border border-slate-700">
+            <button onclick="setRole('student')" id="roleBtn-student" class="px-2.5 py-1 rounded-full font-medium transition text-xs bg-amber-500 text-slate-950 font-semibold">
+                🎓 Student
+            </button>
+            <button onclick="setRole('adult')" id="roleBtn-adult" class="px-2.5 py-1 rounded-full font-medium transition text-xs text-slate-300">
+                👤 Adult
+            </button>
+            <button onclick="setRole('author')" id="roleBtn-author" class="px-2.5 py-1 rounded-full font-medium transition text-xs text-slate-300">
+                ✍️ Author
+            </button>
+        </div>
+
+        <!-- Frame Toggle -->
+        <button onclick="toggleViewMode()" id="viewModeBtn" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-mobile-screen"></i>
+            <span class="hidden md:inline" id="viewModeText">Mobile View</span>
+        </button>
+    </div>
+
+    <div id="appContainer" class="phone-screen w-full bg-slate-50 flex flex-col relative overflow-hidden transition-all duration-300 my-auto mt-12 sm:mt-auto">
+
+        <!-- Notification Toast Toast Overlay -->
+        <div id="toastNotification" class="hidden absolute top-4 left-4 right-4 z-50 bg-emerald-500 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 toast-slide">
+            <div class="bg-white/20 p-2 rounded-xl text-xl">
+                <i class="fa-solid fa-star text-yellow-300"></i>
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-sm" id="toastTitle">Points Earned!</p>
+                <p class="text-xs text-emerald-100" id="toastMessage">+5 Points added to your account.</p>
+            </div>
+            <button onclick="closeToast()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Header / Status Bar (Simulated Mobile Top Bar) -->
+        <div id="simulatedStatusBar" class="bg-white px-6 pt-3 pb-1 flex justify-between items-center text-xs font-semibold text-slate-500 select-none border-b border-slate-100">
+            <span>9:41</span>
+            <div class="w-16 h-4 bg-slate-900 rounded-full mx-auto hidden sm:block"></div> <!-- Camera Island -->
+            <div class="flex gap-2 items-center text-slate-700">
+                <i class="fa-solid fa-signal text-xs"></i>
+                <i class="fa-solid fa-wifi text-xs"></i>
+                <i class="fa-solid fa-battery-full text-xs text-emerald-600"></i>
+            </div>
+        </div>
+
+        <div id="screenContent" class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
+
+            <!-- ================= SCREEN 1: SPLASH ================= -->
+            <section id="screen-splash" class="flex-1 flex flex-col items-center justify-between p-6 text-center bg-gradient-to-b from-blue-50 via-amber-50/30 to-white">
+                <div class="w-full flex justify-end pt-2">
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full" id="splashRoleBadge">Mode: Student Reader</span>
+                </div>
+
+                <div class="my-auto flex flex-col items-center">
+                    <div class="w-24 h-24 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mb-4 transform hover:scale-105 transition">
+                        <i class="fa-solid fa-book-open-reader text-4xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-1">
+                        Read<span class="text-amber-500">2</span>Give
+                    </h1>
+                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">Read • Earn • Give</p>
+                    
+                    <div class="mt-6 bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-slate-100 shadow-sm max-w-xs">
+                        <p class="text-slate-600 font-medium text-sm leading-relaxed">
+                            "Small reads. <br><span class="text-indigo-600 font-bold">Big changes."</span>
+                        </p>
+                        <p class="text-xs text-slate-500 mt-2">Turn every page into free books, learning devices, and hope for children in need.</p>
+                    </div>
+
+                    <!-- Process Steps -->
+                    <div class="grid grid-cols-4 gap-2 mt-8 w-full max-w-xs text-center">
+                        <div class="p-2 bg-blue-50 rounded-xl">
+                            <i class="fa-solid fa-book text-blue-500 text-sm"></i>
+                            <p class="text-[10px] font-bold text-slate-600 mt-1">1. Read</p>
+                        </div>
+                        <div class="p-2 bg-amber-50 rounded-xl">
+                            <i class="fa-solid fa-star text-amber-500 text-sm"></i>
+                            <p class="text-[10px] font-bold text-slate-600 mt-1">2. Earn</p>
+                        </div>
+                        <div class="p-2 bg-rose-50 rounded-xl">
+                            <i class="fa-solid fa-heart text-rose-500 text-sm"></i>
+                            <p class="text-[10px] font-bold text-slate-600 mt-1">3. Donate</p>
+                        </div>
+                        <div class="p-2 bg-emerald-50 rounded-xl">
+                            <i class="fa-solid fa-hands-holding-child text-emerald-500 text-sm"></i>
+                            <p class="text-[10px] font-bold text-slate-600 mt-1">4. Impact</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full space-y-3 pb-4">
+                    <button onclick="navigateTo('home')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2">
+                        Get Started <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                    <button onclick="navigateTo('home')" class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+                        I already have an account
+                    </button>
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 2: HOME ================= -->
+            <section id="screen-home" class="hidden flex-1 flex-col p-5 bg-slate-50">
+                <!-- User Banner -->
+                <div class="flex justify-between items-center mb-5">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900" id="homeUserGreeting">Hello, Parn! 👋</h2>
+                        <p class="text-xs text-slate-500">Good books. Greater impact.</p>
+                    </div>
+                    <div onclick="navigateTo('earn')" class="cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-xs shadow-md shadow-amber-500/20 hover:scale-105 transition">
+                        <i class="fa-solid fa-star text-slate-900"></i>
+                        <span id="userPointsDisplay">120</span> <span class="text-[10px] font-bold opacity-80">pts</span>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="relative mb-5">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" placeholder="Search books, authors, subjects..." class="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 shadow-sm">
+                </div>
+
+                <!-- Featured Banner -->
+                <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white mb-6 shadow-xl shadow-blue-500/15">
+                    <div class="relative z-10 max-w-[65%]">
+                        <span class="bg-amber-400 text-slate-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Featured Campaign</span>
+                        <h3 class="text-base font-bold mt-2 leading-tight">Read Today, Brighter Tomorrow ✨</h3>
+                        <p class="text-[11px] text-blue-100 mt-1">Read 3 chapters today to double points donated to rural schools.</p>
+                        <button onclick="openReader('The Little Prince')" class="mt-3 bg-white text-blue-600 font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-blue-50 transition shadow">
+                            Read Now
+                        </button>
+                    </div>
+                    <i class="fa-solid fa-book-bookmark absolute -right-4 -bottom-4 text-8xl text-white/10 rotate-12"></i>
+                </div>
+
+                <!-- Categories Horizontal Scroll -->
+                <div class="mb-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Categories</h4>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <span class="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl whitespace-nowrap shadow-sm">All Books</span>
+                        <span class="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-xl whitespace-nowrap">Children</span>
+                        <span class="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-xl whitespace-nowrap">Fiction</span>
+                        <span class="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-xl whitespace-nowrap">Science</span>
+                        <span class="bg-white border border-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-xl whitespace-nowrap">Classics</span>
+                    </div>
+                </div>
+
+                <!-- Recommended List -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-sm text-slate-800">Recommended for You</h3>
+                        <button class="text-xs text-blue-600 font-semibold hover:underline">See All</button>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3" id="bookGrid">
+                        <!-- Book Card 1 -->
+                        <div onclick="openReader('The Little Prince')" class="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer group">
+                            <div class="aspect-[3/4] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mb-2 flex items-center justify-center text-white relative overflow-hidden group-hover:scale-95 transition">
+                                <div class="text-center p-2">
+                                    <i class="fa-solid fa-crown text-amber-300 text-xl mb-1"></i>
+                                    <p class="text-[10px] font-bold leading-tight">The Little Prince</p>
+                                </div>
+                                <span class="absolute top-1 right-1 bg-amber-400 text-slate-900 font-extrabold text-[9px] px-1.5 py-0.5 rounded-md">+5 pts</span>
+                            </div>
+                            <h4 class="font-bold text-xs text-slate-800 truncate">The Little Prince</h4>
+                            <p class="text-[10px] text-slate-400">Antoine de St.</p>
+                        </div>
+
+                        <!-- Book Card 2 -->
+                        <div onclick="openReader('Charlotte\'s Web')" class="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer group">
+                            <div class="aspect-[3/4] bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl mb-2 flex items-center justify-center text-white relative overflow-hidden group-hover:scale-95 transition">
+                                <div class="text-center p-2">
+                                    <i class="fa-solid fa-spider text-amber-200 text-xl mb-1"></i>
+                                    <p class="text-[10px] font-bold leading-tight">Charlotte's Web</p>
+                                </div>
+                                <span class="absolute top-1 right-1 bg-amber-400 text-slate-900 font-extrabold text-[9px] px-1.5 py-0.5 rounded-md">+5 pts</span>
+                            </div>
+                            <h4 class="font-bold text-xs text-slate-800 truncate">Charlotte's Web</h4>
+                            <p class="text-[10px] text-slate-400">E.B. White</p>
+                        </div>
+
+                        <!-- Book Card 3 -->
+                        <div onclick="openReader('Wonder')" class="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer group">
+                            <div class="aspect-[3/4] bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl mb-2 flex items-center justify-center text-white relative overflow-hidden group-hover:scale-95 transition">
+                                <div class="text-center p-2">
+                                    <i class="fa-solid fa-sun text-yellow-300 text-xl mb-1"></i>
+                                    <p class="text-[10px] font-bold leading-tight">Wonder</p>
+                                </div>
+                                <span class="absolute top-1 right-1 bg-amber-400 text-slate-900 font-extrabold text-[9px] px-1.5 py-0.5 rounded-md">+5 pts</span>
+                            </div>
+                            <h4 class="font-bold text-xs text-slate-800 truncate">Wonder</h4>
+                            <p class="text-[10px] text-slate-400">R.J. Palacio</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Author Quick Action Banner (Shown for Author Role) -->
+                <div id="authorHomeBanner" class="hidden bg-slate-800 text-white p-4 rounded-2xl border border-slate-700 mt-auto mb-2">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-amber-400">Author Dashboard</p>
+                            <p class="text-[11px] text-slate-300">Upload your eBook to help kids learn!</p>
+                        </div>
+                        <button onclick="openAuthorModal()" class="bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-amber-400 transition">
+                            + Add Book
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 3: EBOOK READER ================= -->
+            <section id="screen-reader" class="hidden flex-1 flex-col bg-amber-50/20 text-slate-800 relative transition-colors duration-300" id="readerBg">
+                <!-- Reader Top Control Bar -->
+                <div class="p-4 flex items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md sticky top-0 z-20">
+                    <button onclick="navigateTo('home')" class="text-slate-600 hover:text-slate-900 text-sm font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-chevron-left text-xs"></i> Back
+                    </button>
+                    <div class="text-center">
+                        <h3 class="font-bold text-xs text-slate-800" id="readerBookTitle">The Little Prince</h3>
+                        <p class="text-[10px] text-slate-400" id="readerChapterNum">Chapter 1 of 18</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleReaderTheme()" class="text-slate-600 hover:text-slate-900 text-xs p-1.5 rounded-lg border border-slate-200">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                        </button>
+                        <button onclick="adjustFontSize()" class="text-slate-600 hover:text-slate-900 text-xs p-1.5 rounded-lg border border-slate-200 font-bold">
+                            Aa
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reader Main View Area -->
+                <div class="flex-1 p-6 overflow-y-auto font-serif leading-relaxed text-sm max-w-lg mx-auto" id="readerTextContainer">
+                    <div class="text-center my-4">
+                        <span class="text-3xl text-amber-500">“</span>
+                        <p class="font-bold italic text-base text-slate-700 px-4">
+                            What is essential is invisible to the eye.
+                        </p>
+                    </div>
+
+                    <div id="readerChapterContent" class="space-y-4 my-6 text-justify text-slate-700">
+                        <p>Once when I was six years old I saw a magnificent picture in a book, called True Stories from Nature, about the primeval forest. It was a picture of a boa constrictor in the act of swallowing an animal.</p>
+                        <p>I showed my masterpiece to the grown-ups, and asked them whether the drawing frightened them. But they answered: "Frighten? Why should any one be frightened by a hat?" My drawing was not a picture of a hat. It was a picture of a boa constrictor digesting an elephant.</p>
+                        <p>The little prince looked at me for a long time. "What is essential is invisible to the eye," he said. "It is only with the heart that one can see rightly."</p>
+                    </div>
+
+                    <!-- Lock Banner for Adults on Chapter 3 -->
+                    <div id="adultPaywallBox" class="hidden bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-300 rounded-2xl p-4 text-center my-6">
+                        <i class="fa-solid fa-lock text-amber-600 text-2xl mb-2"></i>
+                        <h4 class="font-bold text-slate-800 text-sm">Preview Ended (Chapter 3)</h4>
+                        <p class="text-xs text-slate-600 mt-1 mb-3">Adult readers can unlock full eBook access by donating to help children access learning resources!</p>
+                        <button onclick="openAdultDonateModal()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow transition">
+                            Donate $2.99 to Unlock Full Book
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audio Floating Player -->
+                <div class="bg-white/90 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs sticky bottom-16">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-headphones text-blue-500"></i>
+                        <span class="font-semibold text-slate-700 text-[11px]" id="audioStatusText">Audiobook Narrator</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleAudioPlay()" id="audioPlayBtn" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center shadow hover:bg-blue-700 transition">
+                            <i class="fa-solid fa-play text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation / Chapter Progress -->
+                <div class="p-4 bg-white border-t border-slate-200 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs text-slate-500">
+                        <button onclick="changePage(-1)" class="hover:text-slate-900 font-semibold text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left"></i> Prev
+                        </button>
+                        <span class="font-semibold" id="pageIndicator">Page 3 of 18</span>
+                        <button onclick="completeChapter()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+                            Finish Chapter <i class="fa-solid fa-circle-check text-xs"></i>
+                        </button>
+                    </div>
+                    <input type="range" min="1" max="18" value="3" id="readerProgress" oninput="updatePageFromSlider(this.value)" class="w-full accent-amber-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 4: EARN POINTS ================= -->
+            <section id="screen-earn" class="hidden flex-1 flex-col p-5 bg-slate-50">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-900">Earn Points 🌟</h2>
+                    <p class="text-xs text-slate-500">Read books and complete fun tasks to gain donation points.</p>
+                </div>
+
+                <!-- Total Points Display Box -->
+                <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400 p-5 rounded-3xl text-slate-950 mb-6 shadow-lg shadow-amber-500/20 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-900 opacity-80">Your Points Balance</p>
+                        <h3 class="text-3xl font-black mt-1" id="earnScreenPoints">120 <span class="text-sm font-bold">pts</span></h3>
+                    </div>
+                    <div class="w-12 h-12 bg-white/30 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+                        ⭐
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Ways to Earn</h3>
+
+                <div class="space-y-3">
+                    <!-- Quest 1 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+                                📖
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Read 1 Chapter</h4>
+                                <p class="text-[10px] text-slate-400">+5 points per completed chapter</p>
+                            </div>
+                        </div>
+                        <button onclick="navigateTo('reader')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-3 py-1.5 rounded-xl">
+                            Read
+                        </button>
+                    </div>
+
+                    <!-- Quest 2 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+                                🏆
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Finish a Full eBook</h4>
+                                <p class="text-[10px] text-slate-400">+20 bonus points on book completion</p>
+                            </div>
+                        </div>
+                        <button onclick="completeBookTask()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">
+                            Claim +20
+                        </button>
+                    </div>
+
+                    <!-- Quest 3: Daily Login -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center text-lg">
+                                📅
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Daily Check-in Streak</h4>
+                                <p class="text-[10px] text-slate-400">+5 points for daily visit</p>
+                            </div>
+                        </div>
+                        <button onclick="claimDailyStreak(this)" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">
+                            Check In
+                        </button>
+                    </div>
+
+                    <!-- Quest 4: Share -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-lg">
+                                📣
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Share with Friends</h4>
+                                <p class="text-[10px] text-slate-400">+10 points when a friend joins</p>
+                            </div>
+                        </div>
+                        <button onclick="shareApp()" class="bg-purple-50 hover:bg-purple-100 text-purple-600 text-xs font-bold px-3 py-1.5 rounded-xl">
+                            Share
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 5: DONATE ================= -->
+            <section id="screen-donate" class="hidden flex-1 flex-col p-5 bg-slate-50">
+                <div class="text-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-900">Donate & Redeem 🎁</h2>
+                    <p class="text-xs text-slate-500">Convert your reading points into real educational gifts!</p>
+                </div>
+
+                <!-- Points Header -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl flex justify-between items-center mb-5 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold">Available Points</span>
+                    <div class="flex items-center gap-1.5 font-black text-slate-900">
+                        <i class="fa-solid fa-star text-amber-500"></i>
+                        <span id="donateScreenPoints">120</span> <span class="text-xs font-medium text-slate-400">pts</span>
+                    </div>
+                </div>
+
+                <!-- Donation Options Grid -->
+                <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Choose a Donation Option</h3>
+
+                <div class="space-y-3 mb-6">
+                    <!-- Option 1: School Supplies -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-amber-400 transition flex items-center justify-between">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                                🎒
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">School Supplies Kit</h4>
+                                <p class="text-[10px] text-slate-400">Notebooks, pens, and backpacks</p>
+                            </div>
+                        </div>
+                        <button onclick="redeemReward('School Supplies Kit', 50)" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3 py-2 rounded-xl shadow transition">
+                            50 pts
+                        </button>
+                    </div>
+
+                    <!-- Option 2: Learning Devices -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-amber-400 transition flex items-center justify-between">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                                💻
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Learning Device</h4>
+                                <p class="text-[10px] text-slate-400">E-readers & educational tablets</p>
+                            </div>
+                        </div>
+                        <button onclick="redeemReward('Learning Device', 200)" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3 py-2 rounded-xl shadow transition">
+                            200 pts
+                        </button>
+                    </div>
+
+                    <!-- Option 3: Education Fund -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-amber-400 transition flex items-center justify-between">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+                                📚
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">Support Education Fund</h4>
+                                <p class="text-[10px] text-slate-400">General fund for rural school programs</p>
+                            </div>
+                        </div>
+                        <button onclick="redeemReward('Education Fund Grant', 100)" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3 py-2 rounded-xl shadow transition">
+                            100 pts
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Adult Cash Direct Donation Section (Only Visible for Adult Mode or Direct Support) -->
+                <div id="adultCashDonationBox" class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-amber-400">Direct Financial Contribution</span>
+                        <span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">Tax Deductible</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-3">Adult donors receive official tax receipts verified by partner foundations.</p>
+                    
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <button onclick="processCashDonation(5)" class="bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-xs font-bold py-2 rounded-xl border border-slate-700 transition">$5</button>
+                        <button onclick="processCashDonation(10)" class="bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-xs font-bold py-2 rounded-xl border border-slate-700 transition">$10</button>
+                        <button onclick="processCashDonation(25)" class="bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-xs font-bold py-2 rounded-xl border border-slate-700 transition">$25</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 6: IMPACT ================= -->
+            <section id="screen-impact" class="hidden flex-1 flex-col p-5 bg-slate-50">
+                <div class="text-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-900">Real Impact 💖</h2>
+                    <p class="text-xs text-slate-500">See how reading turns into real hope worldwide.</p>
+                </div>
+
+                <!-- Impact Metrics Grid -->
+                <div class="grid grid-cols-3 gap-2 text-center mb-6">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-base font-black text-blue-600">12,580</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Kids Helped</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-base font-black text-amber-500">8</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Foundations</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-base font-black text-emerald-600">1.25M</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Pts Donated</p>
+                    </div>
+                </div>
+
+                <!-- Story / Photo Card -->
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-5">
+                    <div class="h-32 bg-gradient-to-r from-blue-400 to-indigo-500 relative flex items-center justify-center text-white">
+                        <i class="fa-solid fa-child-reaching text-6xl opacity-30"></i>
+                        <span class="absolute bottom-2 left-3 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                            📍 Mae Hong Son Learning Center
+                        </span>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-xs text-slate-800">New Books Arrival Day!</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                            Thanks to 45,000 points donated by Read2Give readers this month, 120 students received brand new storybooks and reading kits!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Verified Partner Foundations List -->
+                <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Verified Partner Foundations</h3>
+                <div class="space-y-2">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-bold text-slate-700">Room to Read Foundation</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Verified Partner</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-bold text-slate-700">UNICEF Education Relief</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Verified Partner</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-bold text-slate-700">Save the Children Foundation</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Verified Partner</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= SCREEN 7: PROFILE ================= -->
+            <section id="screen-profile" class="hidden flex-1 flex-col p-5 bg-slate-50">
+                <div class="flex flex-col items-center text-center my-4">
+                    <div class="w-20 h-20 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-slate-900 text-3xl font-black shadow-lg mb-2">
+                        P
+                    </div>
+                    <h3 class="font-bold text-base text-slate-800" id="profileName">Parn</h3>
+                    <p class="text-xs text-slate-400" id="profileHandle">@parnreader</p>
+                </div>
+
+                <!-- Profile Summary Card -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between mb-5">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Your Balance</p>
+                        <p class="text-xl font-black text-slate-900" id="profilePoints">120 pts</p>
+                    </div>
+                    <button onclick="navigateTo('donate')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl shadow">
+                        Redeem
+                    </button>
+                </div>
+
+                <!-- User Stats Badge Grid -->
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <i class="fa-solid fa-book-open text-blue-500 text-sm mb-1"></i>
+                        <p class="text-xs font-bold text-slate-800">14 Chapters</p>
+                        <p class="text-[10px] text-slate-400">Total Read</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <i class="fa-solid fa-heart text-rose-500 text-sm mb-1"></i>
+                        <p class="text-xs font-bold text-slate-800">3 Gifts Sent</p>
+                        <p class="text-[10px] text-slate-400">Impact Created</p>
+                    </div>
+                </div>
+
+                <!-- Navigation List -->
+                <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden divide-y divide-slate-100 mb-4 text-xs font-medium text-slate-700">
+                    <div class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50">
+                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-slate-400"></i> Reading History</span>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+                    <div class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50">
+                        <span><i class="fa-solid fa-hand-holding-heart mr-2 text-slate-400"></i> My Donations</span>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+                    <div class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50">
+                        <span><i class="fa-solid fa-gear mr-2 text-slate-400"></i> Account Settings</span>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+                </div>
+
+                <!-- Role Switcher Shortcut -->
+                <div class="bg-blue-50 p-3 rounded-2xl text-center border border-blue-100">
+                    <p class="text-xs font-bold text-blue-800">Active Mode: <span id="profileRoleText">Student Reader</span></p>
+                    <p class="text-[10px] text-blue-600 mt-0.5">Switch roles at top control bar</p>
+                </div>
+            </section>
+
+        </div>
+
+        <nav id="bottomNav" class="bg-white border-t border-slate-200 px-3 py-2 flex justify-around items-center select-none text-slate-400">
+            <button onclick="navigateTo('home')" id="nav-home" class="flex flex-col items-center gap-0.5 text-blue-600 font-bold transition">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[10px]">Home</span>
+            </button>
+            <button onclick="navigateTo('reader')" id="nav-reader" class="flex flex-col items-center gap-0.5 hover:text-slate-700 transition">
+                <i class="fa-solid fa-book-open text-base"></i>
+                <span class="text-[10px]">Reader</span>
+            </button>
+            <button onclick="navigateTo('earn')" id="nav-earn" class="flex flex-col items-center gap-0.5 hover:text-slate-700 transition">
+                <i class="fa-solid fa-star text-base"></i>
+                <span class="text-[10px]">Earn</span>
+            </button>
+            <button onclick="navigateTo('donate')" id="nav-donate" class="flex flex-col items-center gap-0.5 hover:text-slate-700 transition">
+                <i class="fa-solid fa-heart text-base"></i>
+                <span class="text-[10px]">Donate</span>
+            </button>
+            <button onclick="navigateTo('impact')" id="nav-impact" class="flex flex-col items-center gap-0.5 hover:text-slate-700 transition">
+                <i class="fa-solid fa-chart-line text-base"></i>
+                <span class="text-[10px]">Impact</span>
+            </button>
+            <button onclick="navigateTo('profile')" id="nav-profile" class="flex flex-col items-center gap-0.5 hover:text-slate-700 transition">
+                <i class="fa-solid fa-user text-base"></i>
+                <span class="text-[10px]">Profile</span>
+            </button>
+        </nav>
+
+        
+        <!-- Author Upload Modal -->
+        <div id="authorModal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl animate-fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-sm text-slate-800">Upload eBook (Author Portal)</h3>
+                    <button onclick="closeAuthorModal()" class="text-slate-400 text-sm"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form onsubmit="submitAuthorBook(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">eBook Title</label>
+                        <input type="text" id="authorBookTitle" required placeholder="e.g. Beyond the Stars" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Author Name</label>
+                        <input type="text" id="authorBookAuthor" required placeholder="Your Name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Free Preview Chapters</label>
+                        <select class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                            <option>3 Chapters (Default)</option>
+                            <option>2 Chapters</option>
+                            <option>100% Free for Kids</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl shadow mt-2">
+                        Publish to Read2Give
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tax Benefit Receipt Modal -->
+        <div id="taxReceiptModal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl text-center">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    📜
+                </div>
+                <h3 class="font-bold text-base text-slate-800">Tax Deduction Receipt</h3>
+                <p class="text-xs text-slate-500 mt-1">Thank you for supporting education through Read2Give!</p>
+
+                <div class="my-4 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-left text-xs space-y-1.5 font-mono">
+                    <div class="flex justify-between"><span>Donor:</span> <span class="font-bold">Parn</span></div>
+                    <div class="flex justify-between"><span>Amount:</span> <span class="font-bold text-emerald-600" id="receiptAmount">$10.00</span></div>
+                    <div class="flex justify-between"><span>Foundation:</span> <span class="font-bold">Room to Read</span></div>
+                    <div class="flex justify-between"><span>Receipt ID:</span> <span class="text-[10px] text-slate-400">R2G-2026-8842</span></div>
+                </div>
+
+                <button onclick="closeTaxModal()" class="w-full bg-slate-900 text-white font-bold text-xs py-3 rounded-xl">
+                    Close Receipt
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Global Application State
+        const state = {
+            points: 120,
+            role: 'student', // 'student', 'adult', 'author'
+            currentScreen: 'splash',
+            isMobileView: true,
+            readerTheme: 'light', // 'light', 'dark'
+            fontSize: 14,
+            currentChapter: 3,
+            isPlayingAudio: false
+        };
+
+        // Navigation Controller
+        function navigateTo(screenId) {
+            state.currentScreen = screenId;
+
+            // Hide all screens
+            const screens = ['splash', 'home', 'reader', 'earn', 'donate', 'impact', 'profile'];
+            screens.forEach(s => {
+                const el = document.getElementById(`screen-${s}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            // Show selected screen
+            const targetScreen = document.getElementById(`screen-${screenId}`);
+            if (targetScreen) targetScreen.classList.remove('hidden');
+
+            // Hide bottom nav on splash screen
+            const bottomNav = document.getElementById('bottomNav');
+            if (screenId === 'splash') {
+                bottomNav.classList.add('hidden');
+            } else {
+                bottomNav.classList.remove('hidden');
+            }
+
+            // Update Nav Icons Styling
+            screens.forEach(s => {
+                const navBtn = document.getElementById(`nav-${s}`);
+                if (navBtn) {
+                    if (s === screenId) {
+                        navBtn.className = "flex flex-col items-center gap-0.5 text-blue-600 font-bold transition";
+                    } else {
+                        navBtn.className = "flex flex-col items-center gap-0.5 hover:text-slate-700 transition";
+                    }
+                }
+            });
+
+            // Refresh Screen Displays
+            updatePointsDisplays();
+        }
+
+        // Role Switcher Handler
+        function setRole(role) {
+            state.role = role;
+
+            // Button active styles
+            ['student', 'adult', 'author'].forEach(r => {
+                const btn = document.getElementById(`roleBtn-${r}`);
+                if (r === role) {
+                    btn.className = "px-2.5 py-1 rounded-full font-medium transition text-xs bg-amber-500 text-slate-950 font-semibold";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-full font-medium transition text-xs text-slate-300";
+                }
+            });
+
+            // Role specific UI adjustments
+            const splashBadge = document.getElementById('splashRoleBadge');
+            const profileRoleText = document.getElementById('profileRoleText');
+            const authorBanner = document.getElementById('authorHomeBanner');
+            const adultPaywall = document.getElementById('adultPaywallBox');
+
+            if (role === 'student') {
+                splashBadge.innerText = 'Mode: Student Reader';
+                profileRoleText.innerText = 'Student Reader';
+                authorBanner.classList.add('hidden');
+                adultPaywall.classList.add('hidden');
+            } else if (role === 'adult') {
+                splashBadge.innerText = 'Mode: Adult Supporter';
+                profileRoleText.innerText = 'Adult Supporter';
+                authorBanner.classList.add('hidden');
+                if (state.currentChapter >= 3) {
+                    adultPaywall.classList.remove('hidden');
+                }
+            } else if (role === 'author') {
+                splashBadge.innerText = 'Mode: Author / Publisher';
+                profileRoleText.innerText = 'Author / Publisher';
+                authorBanner.classList.remove('hidden');
+                adultPaywall.classList.add('hidden');
+            }
+
+            showToast(`Switched to ${role.toUpperCase()} Mode!`);
+        }
+
+        // View Mode Toggle (Mobile / Desktop Frame)
+        function toggleViewMode() {
+            const container = document.getElementById('appContainer');
+            const btnText = document.getElementById('viewModeText');
+            
+            if (state.isMobileView) {
+                container.classList.remove('phone-screen');
+                container.classList.add('desktop-screen');
+                btnText.innerText = "Desktop View";
+                state.isMobileView = false;
+            } else {
+                container.classList.remove('desktop-screen');
+                container.classList.add('phone-screen');
+                btnText.innerText = "Mobile View";
+                state.isMobileView = true;
+            }
+        }
+
+        // Points Management & Sync
+        function addPoints(amount, reason) {
+            state.points += amount;
+            updatePointsDisplays();
+            showToast(`+${amount} Points Earned!`, reason);
+        }
+
+        function updatePointsDisplays() {
+            document.getElementById('userPointsDisplay').innerText = state.points;
+            document.getElementById('earnScreenPoints').innerText = state.points;
+            document.getElementById('donateScreenPoints').innerText = state.points;
+            document.getElementById('profilePoints').innerText = `${state.points} pts`;
+        }
+
+        // Reader Interactive Functions
+        function openReader(bookTitle) {
+            document.getElementById('readerBookTitle').innerText = bookTitle;
+            navigateTo('reader');
+        }
+
+        function completeChapter() {
+            addPoints(5, 'Finished Chapter 3!');
+            state.currentChapter++;
+            document.getElementById('readerChapterNum').innerText = `Chapter ${state.currentChapter} of 18`;
+            document.getElementById('pageIndicator').innerText = `Page ${state.currentChapter} of 18`;
+            document.getElementById('readerProgress').value = state.currentChapter;
+
+            // Check if adult reader mode triggers paywall
+            if (state.role === 'adult' && state.currentChapter >= 3) {
+                document.getElementById('adultPaywallBox').classList.remove('hidden');
+            }
+        }
+
+        function changePage(delta) {
+            if (state.currentChapter + delta >= 1 && state.currentChapter + delta <= 18) {
+                state.currentChapter += delta;
+                document.getElementById('readerChapterNum').innerText = `Chapter ${state.currentChapter} of 18`;
+                document.getElementById('pageIndicator').innerText = `Page ${state.currentChapter} of 18`;
+                document.getElementById('readerProgress').value = state.currentChapter;
+            }
+        }
+
+        function updatePageFromSlider(val) {
+            state.currentChapter = parseInt(val);
+            document.getElementById('readerChapterNum').innerText = `Chapter ${state.currentChapter} of 18`;
+            document.getElementById('pageIndicator').innerText = `Page ${state.currentChapter} of 18`;
+        }
+
+        function adjustFontSize() {
+            state.fontSize = state.fontSize >= 18 ? 12 : state.fontSize + 2;
+            document.getElementById('readerTextContainer').style.fontSize = `${state.fontSize}px`;
+        }
+
+        function toggleReaderTheme() {
+            const container = document.getElementById('screen-reader');
+            if (state.readerTheme === 'light') {
+                container.classList.remove('bg-amber-50/20', 'text-slate-800');
+                container.classList.add('bg-slate-900', 'text-slate-200');
+                state.readerTheme = 'dark';
+            } else {
+                container.classList.remove('bg-slate-900', 'text-slate-200');
+                container.classList.add('bg-amber-50/20', 'text-slate-800');
+                state.readerTheme = 'light';
+            }
+        }
+
+        function toggleAudioPlay() {
+            state.isPlayingAudio = !state.isPlayingAudio;
+            const btn = document.getElementById('audioPlayBtn');
+            const status = document.getElementById('audioStatusText');
+            if (state.isPlayingAudio) {
+                btn.innerHTML = `<i class="fa-solid fa-pause text-xs"></i>`;
+                status.innerText = "Playing Audio Chapter 3...";
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-play text-xs"></i>`;
+                status.innerText = "Audiobook Narrator";
+            }
+        }
+
+        // Earn Tasks Actions
+        function claimDailyStreak(btn) {
+            addPoints(5, 'Daily Login Streak!');
+            btn.disabled = true;
+            btn.innerText = "Claimed ✓";
+            btn.className = "bg-slate-200 text-slate-400 text-xs font-bold px-3 py-1.5 rounded-xl cursor-not-allowed";
+        }
+
+        function completeBookTask() {
+            addPoints(20, 'Book Finished Bonus!');
+        }
+
+        function shareApp() {
+            addPoints(10, 'Shared Read2Give!');
+        }
+
+        // Donation & Redemption Handler
+        function redeemReward(itemName, cost) {
+            if (state.points >= cost) {
+                state.points -= cost;
+                updatePointsDisplays();
+                showToast(`Donation Successful!`, `You donated a ${itemName} to a child in need!`);
+            } else {
+                showToast(`Insufficient Points`, `You need ${cost - state.points} more points.`);
+            }
+        }
+
+        function processCashDonation(amount) {
+            document.getElementById('receiptAmount').innerText = `$${amount}.00`;
+            document.getElementById('taxReceiptModal').classList.remove('hidden');
+            addPoints(amount * 10, `Donated $${amount}! Earned matching impact points!`);
+        }
+
+        function openAdultDonateModal() {
+            processCashDonation(2.99);
+            document.getElementById('adultPaywallBox').classList.add('hidden');
+        }
+
+        function closeTaxModal() {
+            document.getElementById('taxReceiptModal').classList.add('hidden');
+        }
+
+        // Author Upload Modal
+        function openAuthorModal() {
+            document.getElementById('authorModal').classList.remove('hidden');
+        }
+
+        function closeAuthorModal() {
+            document.getElementById('authorModal').classList.add('hidden');
+        }
+
+        function submitAuthorBook(e) {
+            e.preventDefault();
+            const title = document.getElementById('authorBookTitle').value;
+            closeAuthorModal();
+            showToast(`Book Published!`, `"${title}" is now available for kids to read.`);
+        }
+
+        // Toast Helper
+        function showToast(title, msg = '') {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                closeToast();
+            }, 3000);
+        }
+
+        function closeToast() {
+            document.getElementById('toastNotification').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
